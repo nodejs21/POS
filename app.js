@@ -78,12 +78,29 @@ app.get('/tables', (req, res) => {
 
 app.get('/categories', (req, res) => {
 	sql.close();
-	var query = ``;
+	// select c.CategoryName, c.BackColor, c.Cat_ID, cs.SubCategory, cs.BackColor from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.Discount = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;
+	// select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor, d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Modifier, dm.Price  from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.DishName = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;
+	var query = `select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor from Category AS c LEFT JOIN CategorySub AS cs ON c.CategoryName = cs.Category;`;
+	var category = [];
 	sql.connect(DbConnectionString).then((pool) => {
 		return pool.request()
 		.query(query);
 	}).then((result) => {
-
+		var records = result.recordset;
+		records.forEach((record) => {
+			category.push({
+				"CategoryName": record.CategoryName,
+				"BackColor": record.CategoryBackColor,
+				"Cat_ID": record.Cat_ID,
+				"SubCategory": [{
+					"SubCategoryName": record.SubCategory,
+					"BackColor": record.CategorySubBackColor
+				}]
+			});
+			console.log(category);
+		});
+		res.json(category);
+		// res.json(result.recordset);
 	}).catch((err) => {
 		res.json(err);
 	});
