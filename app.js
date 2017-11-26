@@ -142,19 +142,28 @@ records.forEach((record) => {
 				"BackColor": record.CategorySubBackColor
 			});
 		} else {
-			category.push({
-				"CategoryName": record.CategoryName,
-				"BackColor": record.CategoryBackColor,
-				"Cat_ID": record.Cat_ID,
-				"SubCategory": [{
-					"SubCategoryName": record.SubCategory,
-					"BackColor": record.CategorySubBackColor
-				}]
-			})
+			if(record.SubCategory === null) {
+				console.log(record.SubCategory);
+				category.push({
+					"CategoryName": record.CategoryName,
+					"BackColor": record.CategoryBackColor,
+					"Cat_ID": record.Cat_ID,
+					"SubCategory": []
+				});
+			} else {
+				category.push({
+					"CategoryName": record.CategoryName,
+					"BackColor": record.CategoryBackColor,
+					"Cat_ID": record.Cat_ID,
+					"SubCategory": [{
+						"SubCategoryName": record.SubCategory,
+						"BackColor": record.CategorySubBackColor
+					}]
+				});
+			}
 		}
 		prev = record.Cat_ID;
 	});
-// console.log(category[3].SubCategory);
 res.json(category);
 // res.json(result.recordset);
 }).catch((err) => {
