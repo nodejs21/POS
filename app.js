@@ -54,32 +54,47 @@ app.get('/tables', (req, res) => {
 			return res.send('No record found!!');
 		}
 		var records = result.recordset;
-		var S1 = [];
-		var S2 = [];
-		var S3 = [];
+		// var S1 = [];
+		// var S2 = [];
+		// var S3 = [];
+		// records.forEach((floor) => {
+		// 	var f = floor.Floor;
+		// 	delete floor.Floor;
+		// 	if(f === "S1") {
+		// 		S1.push(floor);
+		// 	} else if(f === "S2"){
+		// 		S2.push(floor);
+		// 	} else if(f === "S3"){
+		// 		S3.push(floor);
+		// 	}
+		// });
+		// var all = [{S1},{S2},{S3}];
+		// res.json(all);
+		var S1 = {"Floor Name": "S1", "Tables": []};
+		var S2 = {"Floor Name": "S2", "Tables": []};
+		var S3 = {"Floor Name": "S3", "Tables": []};
 		records.forEach((floor) => {
-			var f = floor.Floor
+			var f = floor.Floor;
 			delete floor.Floor;
 			if(f === "S1") {
-				S1.push(floor);
-			} else if(f === "S2"){
-				S2.push(floor);
-			} else if(f === "S3"){
-				S3.push(floor);
+				S1.Tables.push(floor);
+			} else if (f === "S2") {
+				S2.Tables.push(floor);
+			} else if (f === "S3") {
+				S3.Tables.push(floor);
 			}
 		});
-		var all = {S1,S2,S3}
-		res.json(all);
-// return res.json(result.recordset);
-}).catch((err) => {
-	res.json(err);
-});
+		var all = [S1,S2,S3];
+		return res.json(all);
+	}).catch((err) => {
+		res.json(err);
+	});
 });
 
 app.get('/categories', (req, res) => {
 	sql.close();
-// select c.CategoryName, c.BackColor, c.Cat_ID, cs.SubCategory, cs.BackColor from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.Discount = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;
-// select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor, d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Modifier, dm.Price  from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.DishName = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;
+/*select c.CategoryName, c.BackColor, c.Cat_ID, cs.SubCategory, cs.BackColor from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.Discount = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;
+select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor, d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Modifier, dm.Price  from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.DishName = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;*/
 var query = `select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor from Category AS c LEFT JOIN CategorySub AS cs ON c.CategoryName = cs.Category;`;
 var category = [];
 sql.connect(DbConnectionString).then((pool) => {
@@ -88,46 +103,8 @@ sql.connect(DbConnectionString).then((pool) => {
 }).then((result) => {
 	var records = result.recordset;
 	var prev = "";
-	// for(x in records) {
-	// 	if(records[x].CategoryName == prev) {
-	// 		console.log(records[x].CategoryName+"\n"+prev);
-	// 		// category[x-1].concat({
-	// 		// 	"SubCategory": [{
-	// 		// 		"SubCategoryName": record.SubCategory,
-	// 		// 		"BackColor": record.CategorySubBackColor
-	// 		// 	}]
-	// 		// });
-	// 	} else {
-	// 		console.log("I'm in else!!");
-	// 		// category.push({
-	// 		// 	"CategoryName": record.CategoryName,
-	// 		// 	"BackColor": record.CategoryBackColor,
-	// 		// 	"Cat_ID": record.Cat_ID,
-	// 		// 	"SubCategory": [{
-	// 		// 		"SubCategoryName": record.SubCategory,
-	// 		// 		"BackColor": record.CategorySubBackColor
-	// 		// 	}]
-	// 		// })
-	// 	}
-	// 	prev = records[x].CategoryName;
-	// }
-
-// records.forEach((record) => {
-// 	var name = record.CategoryName;
-// 	if(name != prevName)
-// 	category.push({
-// 		"CategoryName": record.CategoryName,
-// 		"BackColor": record.CategoryBackColor,
-// 		"Cat_ID": record.Cat_ID,
-// 		"SubCategory": [{
-// 			"SubCategoryName": record.SubCategory,
-// 			"BackColor": record.CategorySubBackColor
-// 		}]
-// 	});
-// 	console.log(category);
-// });
-var i = -1;
-records.forEach((record) => {
+	var i = -1;
+	records.forEach((record) => {
 	// console.log(record.CategoryName);
 	// console.log(prev);
 	i++;
@@ -164,8 +141,8 @@ records.forEach((record) => {
 		}
 		prev = record.Cat_ID;
 	});
-res.json(category);
-// res.json(result.recordset);
+	res.json(category);
+// res.json(result.recordset);	
 }).catch((err) => {
 	res.json(err);
 });
