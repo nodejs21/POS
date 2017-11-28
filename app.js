@@ -70,9 +70,9 @@ app.get('/tables', (req, res) => {
 		// });
 		// var all = [{S1},{S2},{S3}];
 		// res.json(all);
-		var S1 = {"Floor Name": "S1", "Tables": []};
-		var S2 = {"Floor Name": "S2", "Tables": []};
-		var S3 = {"Floor Name": "S3", "Tables": []};
+		var S1 = {"FloorName": "S1", "Tables": []};
+		var S2 = {"FloorName": "S2", "Tables": []};
+		var S3 = {"FloorName": "S3", "Tables": []};
 		records.forEach((floor) => {
 			var f = floor.Floor;
 			delete floor.Floor;
@@ -105,15 +105,9 @@ sql.connect(DbConnectionString).then((pool) => {
 	var prev = "";
 	var i = -1;
 	records.forEach((record) => {
-	// console.log(record.CategoryName);
-	// console.log(prev);
-	i++;
-	if(record.Cat_ID == prev) {
-		i--;
-			/*// console.log("Matched: "+prev);
-			// console.log(i+": "+(i-1)+": "+record.Cat_ID+"||"+prev + "  ||  "+JSON.stringify(category[i-1])+"\n******************");
-			console.log(i+": "+(i-1)+": "+record.Cat_ID+"|"+prev+"|"+(i-2)+"  ||  "+JSON.stringify(category[i])+"\n******************");
-			// console.log(i+": "+JSON.stringify(category[i-1].SubCategory, undefined, 2)+"   ||  "+category[i-1].Cat_ID);*/
+		i++;
+		if(record.Cat_ID == prev) {
+			i--;
 			category[i].SubCategory.push({
 				"SubCategoryName": record.SubCategory,
 				"BackColor": record.CategorySubBackColor
@@ -146,6 +140,78 @@ sql.connect(DbConnectionString).then((pool) => {
 }).catch((err) => {
 	res.json(err);
 });
+});
+
+app.get('/dishes', (req, res) => {
+	sql.close();
+	var query = `select d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Category, dm.Modifier, dm.Price from Dish as d FULL JOIN DishModifierAssignment as dma ON d.DishName = dma.DishName LEFT JOIN DishModifier as dm on (dma.ModifierCategory = dm.Category OR dma.ModifierCategory = dm.Modifier);`;
+	var dishes = [];
+	sql.connect(DbConnectionString).then((pool) => {
+		return pool.request()
+		.query(query);
+	}).then((result) => {
+		var records = result.recordset;
+		var prevDishName = "";
+		var prevModifierCategory = "";
+		var i = -1;
+		var j = 0;
+		var k = 0;
+		records.forEach((record) => {
+			i++;
+			if(record.DishName === prevDishName) {
+				i--;
+				if(record.ModifierCategory === prevModifierCategory && record.ModifierCategory != null) {
+					// console.log("ModifierCategory: "+record.ModifierCategory+" Prev: "+prevModifierCategory+" Modifier: "+record.Modifier);
+					dishes[i].DishModifierAssignments[j].Modifiers.push({
+						"ModifierName": record.Modifier,
+						"Price": record.Price
+					});
+					// console.log("j: "+j+"  "+JSON.stringify(dishes[i].DishModifierAssignments[j]));
+				} else {
+					j++;
+					dishes[i].DishModifierAssignments.push({
+						"AssignmentName": record.ModifierCategory,
+						"Modifiers": [{
+							"ModifierName": record.Modifier,
+							"Price": record.Price
+						}]
+					});
+				}
+				prevModifierCategory = record.ModifierCategory;
+			} else {
+				j = 0;
+				if(record.ModifierCategory === null) {
+					dishes.push({
+						"DishName": record.DishName,
+						"Rate": record.Rate,
+						"TakeAwayRate": record.TakeAwayRate,
+						"DeliveryRate": record.DeliveryRate,
+						"DishModifierAssignments": []
+					});
+				} else {
+					dishes.push({
+						"DishName": record.DishName,
+						"Rate": record.Rate,
+						"TakeAwayRate": record.TakeAwayRate,
+						"DeliveryRate": record.DeliveryRate,
+						"DishModifierAssignments": [{
+							"AssignmentName": record.ModifierCategory,
+							"Modifiers": [{
+								"ModifierName": record.Modifier,
+								"Price": record.Price
+							}]
+						}]
+					});
+				}
+				prevModifierCategory = record.ModifierCategory;
+			}
+			prevDishName = record.DishName;
+		});
+		res.json(dishes);
+		// res.json(result.recordset);
+	}).catch((err) => {
+		res.json(err);
+	})
 });
 
 app.listen(port, function() {
