@@ -142,9 +142,18 @@ sql.connect(DbConnectionString).then((pool) => {
 });
 });
 
-app.get('/dishes', (req, res) => {
+app.post('/dishes', (req, res) => {
 	sql.close();
-	var query = `select d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Category, dm.Modifier, dm.Price from Dish as d FULL JOIN DishModifierAssignment as dma ON d.DishName = dma.DishName LEFT JOIN DishModifier as dm on (dma.ModifierCategory = dm.Category OR dma.ModifierCategory = dm.Modifier);`;
+	var type = req.body.type;
+	var title = req.body.title;
+	var query = "";
+	// var query = `select d.Category ,d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Category, dm.Modifier, dm.Price from Dish as d FULL JOIN DishModifierAssignment as dma ON d.DishName = dma.DishName LEFT JOIN DishModifier as dm on (dma.ModifierCategory = dm.Category OR dma.ModifierCategory = dm.Modifier);`;
+	if(type === "0") {
+		query = `select d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Category, dm.Modifier, dm.Price from Dish as d FULL JOIN DishModifierAssignment as dma ON d.DishName = dma.DishName FULL JOIN DishModifier as dm on (dma.ModifierCategory = dm.Category OR dma.ModifierCategory = dm.Modifier) WHERE d.Category = '${title}';`
+		
+	} else {
+		query = `select d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Category, dm.Modifier, dm.Price from Dish as d FULL JOIN DishModifierAssignment as dma ON d.DishName = dma.DishName FULL JOIN DishModifier as dm on (dma.ModifierCategory = dm.Category OR dma.ModifierCategory = dm.Modifier) WHERE d.SubCategory = '${title}';`;
+	}
 	var dishes = [];
 	sql.connect(DbConnectionString).then((pool) => {
 		return pool.request()
@@ -208,7 +217,7 @@ app.get('/dishes', (req, res) => {
 			prevDishName = record.DishName;
 		});
 		res.json(dishes);
-		// res.json(result.recordset);
+		// res.json(result);
 	}).catch((err) => {
 		res.json(err);
 	})
