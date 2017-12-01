@@ -25,6 +25,7 @@ app.post('/addOrder', (req, res) => {
 	var query1 = "";
 	var query2 = "";
 	sql.connect(DbConnectionString).then(async (pool) => {
+		await pool.request().query(`UPDATE R_Table SET BkColor='-65536' WHERE TableNo='${req.body.TableNo}';`);
 		var c = await pool.request().query(`SELECT max(Id) AS max_id FROM RestaurantPOS_OrderInfoKOT;`);
 		c = c.recordset[0].max_id;
 		var b = `KOT-${c+1}`;
