@@ -52,7 +52,8 @@ app.post('/login', (req, res) => {
 			return res.send("Check your password!!");
 		}
 		var UserID = result1.recordset[0].UserID;
-		var query2 = `SELECT r.UserID, t.id, t.TicketNo, t.GrandTotal, t.TableNo  FROM Registration as r JOIN TempRestaurantPOS_OrderInfoKOT as t ON r.UserID = '${UserID}' AND t.Operator = '${UserID}';`;
+		// var query2 = `SELECT r.UserID, t.id, t.TicketNo, t.GrandTotal, t.TableNo  FROM Registration as r JOIN TempRestaurantPOS_OrderInfoKOT as t ON r.UserID = '${UserID}' AND t.Operator = '${UserID}';`;
+		var query2 = `SELECT r.UserID, t.id, t.TicketNo, t.GrandTotal, t.TableNo  FROM Registration as r JOIN TempRestaurantPOS_OrderInfoKOT as t ON RTRIM(r.UserID) = '${UserID}' AND RTRIM(t.Operator) = '${UserID}';`;
 		var result2 = await pool.request().query(query2);
 		if(!result2) {
 			return res.send(`No record found against ${UserID}`);
@@ -115,7 +116,7 @@ app.get('/categories', (req, res) => {
 	sql.close();
 /*select c.CategoryName, c.BackColor, c.Cat_ID, cs.SubCategory, cs.BackColor from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.Discount = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;
 select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor, d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Modifier, dm.Price  from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.DishName = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;*/
-var query = `select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor from Category AS c LEFT JOIN CategorySub AS cs ON c.CategoryName = cs.Category;`;
+var query = `select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor from Category AS c LEFT JOIN CategorySub AS cs ON RTRIM(c.CategoryName) = RTRIM(cs.Category);`;
 var category = [];
 sql.connect(DbConnectionString).then((pool) => {
 	return pool.request()
