@@ -20,6 +20,26 @@ const DbConnectionString = {
 	}
 };
 
+app.post('/addOrder', (req, res) => {
+	sql.close();
+	var query1 = "";
+	var query2 = "";
+	sql.connect(DbConnectionString).then(async (pool) => {
+		var c = await pool.request().query(`SELECT max(Id) AS max_id FROM RestaurantPOS_OrderInfoKOT;`);
+		c = c.recordset[0].max_id;
+		var b = `KOT-${c+1}`;
+		query1 = `INSERT INTO RestaurantPOS_OrderInfoKOT (Id, TicketNo, BillDate,GroupName,GrandTotal, TableNo, Operator, TicketNote, GST) VALUES (${c+1},'${b}', CURRENT_TIMESTAMP,'${b}','${req.body.GrandTotal}', '${req.body.TableNo}', '${req.body.Operator}','${req.body.TicketNote}', '${req.body.Gst}');INSERT INTO TempRestaurantPOS_OrderInfoKOT (Id, TicketNo, BillDate,GroupName,GrandTotal, TableNo, Operator, TicketNote, GST) VALUES (${c+1},'${b}', CURRENT_TIMESTAMP,'${b}','${req.body.GrandTotal}', '${req.body.TableNo}', '${req.body.Operator}','${req.body.TicketNote}', '${req.body.Gst}');`;
+		await pool.request().query(query1);
+		req.body.Dishes.forEach((dish) => {
+			query2 += `INSERT INTO RestaurantPOS_OrderedProductKOT (TicketID, Dish, Rate, Quantity, Amount, VATPer, VATAmount, STPer, STAmount, SCPer, SCAmount, DiscountPer, DiscountAmount, TotalAmount) VALUES (${c+1}, '${dish.DishName}', '${dish.Rate}', '${dish.DishCount}', '${dish.Rate}', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, '${dish.TotalAmount}');INSERT INTO TempRestaurantPOS_OrderedProductKOT (TicketID, Dish, Rate, Quantity, Amount, VATPer, VATAmount, STPer, STAmount, SCPer, SCAmount, DiscountPer, DiscountAmount, TotalAmount, T_Number) VALUES (${c+1}, '${dish.DishName}', '${dish.Rate}', '${dish.DishCount}', '${dish.Rate}', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, '${dish.TotalAmount}', '${req.body.TableNo}');`;
+		});
+		await pool.request().query(query2);
+	}).catch((err) => {
+		return res.json(err);
+	});
+	res.send(true);
+});
+
 app.post('/login', (req, res) => {
 	sql.close();
 	var pass = req.body.pass;
@@ -114,7 +134,7 @@ sql.connect(DbConnectionString).then((pool) => {
 			});
 		} else {
 			if(record.SubCategory === null) {
-				console.log(record.SubCategory);
+				// console.log(record.SubCategory);
 				category.push({
 					"CategoryName": record.CategoryName,
 					"BackColor": record.CategoryBackColor,
