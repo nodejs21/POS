@@ -25,8 +25,8 @@ app.post('/addOrder', (req, res) => {
 	var query1 = "";
 	var query2 = "";
 	sql.connect(DbConnectionString).then(async (pool) => {
-		await pool.request().query(`UPDATE R_Table SET BkColor='-65536' WHERE TableNo='${req.body.TableNo}';`);
-		var c = await pool.request().query(`SELECT max(Id) AS max_id FROM RestaurantPOS_OrderInfoKOT;`);
+		var c = await pool.request().query(`UPDATE R_Table SET BkColor='-65536' WHERE TableNo='${req.body.TableNo}';`);
+		c = await pool.request().query(`SELECT max(Id) AS max_id FROM RestaurantPOS_OrderInfoKOT;`);
 		c = c.recordset[0].max_id;
 		var b = `KOT-${c+1}`;
 		query1 = `INSERT INTO RestaurantPOS_OrderInfoKOT (Id, TicketNo, BillDate,GroupName,GrandTotal, TableNo, Operator, TicketNote, GST) VALUES (${c+1},'${b}', CURRENT_TIMESTAMP,'${b}','${req.body.GrandTotal}', '${req.body.TableNo}', '${req.body.Operator}','${req.body.TicketNote}', '${req.body.Gst}');INSERT INTO TempRestaurantPOS_OrderInfoKOT (Id, TicketNo, BillDate,GroupName,GrandTotal, TableNo, Operator, TicketNote, GST) VALUES (${c+1},'${b}', CURRENT_TIMESTAMP,'${b}','${req.body.GrandTotal}', '${req.body.TableNo}', '${req.body.Operator}','${req.body.TicketNote}', '${req.body.Gst}');`;
@@ -35,10 +35,10 @@ app.post('/addOrder', (req, res) => {
 			query2 += `INSERT INTO RestaurantPOS_OrderedProductKOT (TicketID, Dish, Rate, Quantity, Amount, VATPer, VATAmount, STPer, STAmount, SCPer, SCAmount, DiscountPer, DiscountAmount, TotalAmount) VALUES (${c+1}, '${dish.DishName}', '${dish.Rate}', '${dish.DishCount}', '${dish.Rate}', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, '${dish.TotalAmount}');INSERT INTO TempRestaurantPOS_OrderedProductKOT (TicketID, Dish, Rate, Quantity, Amount, VATPer, VATAmount, STPer, STAmount, SCPer, SCAmount, DiscountPer, DiscountAmount, TotalAmount, T_Number) VALUES (${c+1}, '${dish.DishName}', '${dish.Rate}', '${dish.DishCount}', '${dish.Rate}', 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, '${dish.TotalAmount}', '${req.body.TableNo}');`;
 		});
 		await pool.request().query(query2);
+		return res.json(c+1);
 	}).catch((err) => {
 		return res.json(err);
 	});
-	res.send(true);
 });
 
 app.post('/login', (req, res) => {
@@ -53,8 +53,7 @@ app.post('/login', (req, res) => {
 			return res.send("Check your password!!");
 		}
 		var UserID = result1.recordset[0].UserID;
-		// var query2 = `SELECT r.UserID, t.id, t.TicketNo, t.GrandTotal, t.TableNo  FROM Registration as r JOIN TempRestaurantPOS_OrderInfoKOT as t ON r.UserID = '${UserID}' AND t.Operator = '${UserID}';`;
-		var query2 = `SELECT r.UserID, t.id, t.TicketNo, t.GrandTotal, t.TableNo  FROM Registration as r JOIN TempRestaurantPOS_OrderInfoKOT as t ON RTRIM(r.UserID) = '${UserID}' AND RTRIM(t.Operator) = '${UserID}';`;
+		var query2 = `SELECT r.UserID, t.id, RTRIM(t.TicketNo) AS TicketNo, t.GrandTotal, RTRIM(t.TableNo) AS TableNo FROM Registration as r JOIN TempRestaurantPOS_OrderInfoKOT as t ON RTRIM(r.UserID) = '${UserID}' AND RTRIM(t.Operator) = '${UserID}';`;
 		var result2 = await pool.request().query(query2);
 		if(!result2) {
 			return res.send(`No record found against ${UserID}`);
@@ -76,22 +75,6 @@ app.get('/tables', (req, res) => {
 			return res.send('No record found!!');
 		}
 		var records = result.recordset;
-		// var S1 = [];
-		// var S2 = [];
-		// var S3 = [];
-		// records.forEach((floor) => {
-		// 	var f = floor.Floor;
-		// 	delete floor.Floor;
-		// 	if(f === "S1") {
-		// 		S1.push(floor);
-		// 	} else if(f === "S2"){
-		// 		S2.push(floor);
-		// 	} else if(f === "S3"){
-		// 		S3.push(floor);
-		// 	}
-		// });
-		// var all = [{S1},{S2},{S3}];
-		// res.json(all);
 		var S1 = {"FloorName": "S1", "Tables": []};
 		var S2 = {"FloorName": "S2", "Tables": []};
 		var S3 = {"FloorName": "S3", "Tables": []};
