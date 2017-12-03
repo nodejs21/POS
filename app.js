@@ -46,19 +46,46 @@ app.post('/login', (req, res) => {
 	var pass = req.body.pass;
 	var raw = CryptoJS.enc.Utf8.parse(pass);
 	var base64 = CryptoJS.enc.Base64.stringify(raw);
-	var query1 = `SELECT * FROM Registration WHERE Password='${base64}';`;
+	var query1 = `SELECT RTRIM(UserID) AS UserID FROM Registration WHERE Password='${base64}';`;
+	var final = [];
 	sql.connect(DbConnectionString).then(async (pool) => {
 		var result1 = await pool.request().query(query1);
 		if(!result1) {
 			return res.send("Check your password!!");
 		}
 		var UserID = result1.recordset[0].UserID;
-		var query2 = `SELECT r.UserID, t.id, RTRIM(t.TicketNo) AS TicketNo, t.GrandTotal, RTRIM(t.TableNo) AS TableNo FROM Registration as r JOIN TempRestaurantPOS_OrderInfoKOT as t ON RTRIM(r.UserID) = '${UserID}' AND RTRIM(t.Operator) = '${UserID}';`;
+		var query2 = `SELECT Id, RTRIM(TicketNo) AS TicketNo, BillDate,GrandTotal, RTRIM(TableNo) AS TableNo, TicketNote, GST FROM TempRestaurantPOS_OrderInfoKOT WHERE Operator = '${UserID}'`;
 		var result2 = await pool.request().query(query2);
-		if(!result2) {
-			return res.send(`No record found against ${UserID}`);
+		result2.recordset.forEach((result) => {
+			final.push({
+				"Id": result.Id,
+				"TicketNo": result.TicketNo,
+				"BillDate": result.BillDate,
+				"GrandTotal": result.GrandTotal,
+				"TableNo": result.TableNo,
+				"TicketNote": result.TicketNote,
+				"GST": result.GST,
+				"Dishes" : []
+			});
+		});
+		var query3 = "";
+		for(a in result2.recordset) {
+			query3 += `SELECT TicketId, Dish, Rate, Quantity, TotalAmount FROM TempRestaurantPOS_OrderedProductKOT WHERE TicketID = ${result2.recordset[a].Id};`;
 		}
-		return res.json(result2.recordset);
+		var result3 = await pool.request().query(query3);
+		for(x in final){
+			final[x]["Dishes"] = result3.recordsets[x];
+		}
+			if(!result2) {
+				return res.send(`No record found against ${UserID}`);
+			}
+			final.forEach((x) => {
+				console.log(x);
+			});
+		return res.json({
+			"UserId": UserID,
+			"Orders": final
+		});
 	}).catch((err) => {
 		return res.json(err);
 	});
@@ -98,8 +125,6 @@ app.get('/tables', (req, res) => {
 
 app.get('/categories', (req, res) => {
 	sql.close();
-/*select c.CategoryName, c.BackColor, c.Cat_ID, cs.SubCategory, cs.BackColor from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.Discount = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;
-select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor, d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Modifier, dm.Price  from Category AS c JOIN CategorySub AS cs ON c.CategoryName = cs.Category JOIN Dish AS d ON cs.SubCategory = d.SubCategory JOIN DishModifierASsignment AS dma ON d.DishName = dma.DishName JOIN DishModifier AS dm ON dma.ModifierCategory = dm.Category;*/
 var query = `select c.CategoryName, c.BackColor as CategoryBackColor, c.Cat_ID, cs.SubCategory, cs.BackColor as CategorySubBackColor from Category AS c LEFT JOIN CategorySub AS cs ON RTRIM(c.CategoryName) = RTRIM(cs.Category);`;
 var category = [];
 sql.connect(DbConnectionString).then((pool) => {
@@ -141,7 +166,6 @@ sql.connect(DbConnectionString).then((pool) => {
 		prev = record.Cat_ID;
 	});
 	res.json(category);
-// res.json(result.recordset);	
 }).catch((err) => {
 	res.json(err);
 });
@@ -152,7 +176,6 @@ app.post('/dishes', (req, res) => {
 	var type = req.body.type;
 	var title = req.body.title;
 	var query = "";
-	// var query = `select d.Category ,d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Category, dm.Modifier, dm.Price from Dish as d FULL JOIN DishModifierAssignment as dma ON d.DishName = dma.DishName LEFT JOIN DishModifier as dm on (dma.ModifierCategory = dm.Category OR dma.ModifierCategory = dm.Modifier);`;
 	if(type === "0") {
 		query = `select d.DishName, d.Rate, d.TakeAwayRate, d.DeliveryRate, dma.ModifierCategory, dm.Category, dm.Modifier, dm.Price from Dish as d FULL JOIN DishModifierAssignment as dma ON d.DishName = dma.DishName FULL JOIN DishModifier as dm on (dma.ModifierCategory = dm.Category OR dma.ModifierCategory = dm.Modifier) WHERE d.Category = '${title}';`
 		
@@ -222,7 +245,6 @@ app.post('/dishes', (req, res) => {
 			prevDishName = record.DishName;
 		});
 		res.json(dishes);
-		// res.json(result);
 	}).catch((err) => {
 		res.json(err);
 	})
