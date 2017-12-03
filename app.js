@@ -64,13 +64,13 @@ app.post('/login', (req, res) => {
 				"GrandTotal": result.GrandTotal,
 				"TableNo": result.TableNo,
 				"TicketNote": result.TicketNote,
-				"GST": result.GST,
+				"Gst": result.GST,
 				"Dishes" : []
 			});
 		});
 		var query3 = "";
 		for(a in result2.recordset) {
-			query3 += `SELECT TicketId, Dish, Rate, Quantity, TotalAmount FROM TempRestaurantPOS_OrderedProductKOT WHERE TicketID = ${result2.recordset[a].Id};`;
+			query3 += `SELECT Dish, Rate, Quantity AS DishCount, TotalAmount FROM TempRestaurantPOS_OrderedProductKOT WHERE TicketID = ${result2.recordset[a].Id};`;
 		}
 		var result3 = await pool.request().query(query3);
 		for(x in final){
@@ -79,13 +79,13 @@ app.post('/login', (req, res) => {
 			if(!result2) {
 				return res.send(`No record found against ${UserID}`);
 			}
-			final.forEach((x) => {
-				console.log(x);
-			});
-		return res.json({
+			// final.forEach((x) => {
+			// 	console.log(x);
+			// });
+		return res.json([{
 			"UserId": UserID,
 			"Orders": final
-		});
+		}]);
 	}).catch((err) => {
 		return res.json(err);
 	});
