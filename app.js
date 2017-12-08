@@ -70,7 +70,7 @@ app.post('/login', (req, res) => {
 		});
 		var query3 = "";
 		for(a in result2.recordset) {
-			query3 += `SELECT Dish, Rate, Quantity AS DishCount, TotalAmount FROM TempRestaurantPOS_OrderedProductKOT WHERE TicketID = ${result2.recordset[a].Id};`;
+			query3 += `SELECT Dish AS DishName, Rate, Quantity AS DishCount, TotalAmount FROM TempRestaurantPOS_OrderedProductKOT WHERE TicketID = ${result2.recordset[a].Id};`;
 		}
 		var result3 = await pool.request().query(query3);
 		for(x in final){
