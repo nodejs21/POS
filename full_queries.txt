@@ -1,0 +1,32 @@
+SELECT DISTINCT YEAR(BillDate) From RestaurantPOS_BillingInfoKOT;
+SELECT COUNT(*) FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = '2017';
+
+SELECT YEAR(BillDate) as year, COUNT(*) AS sales FROM RestaurantPOS_BillingInfoKOT GROUP BY YEAR(BillDate);
+
+SELECT YEAR(BillDate) as Year, MONTH(BillDate) as Month, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoKOT GROUP BY MONTH(BillDate), YEAR(BillDate);
+
+SELECT YEAR(BillDate) as Year, DATENAME(month, BillDate) as Month, DATEPART(week, BillDate) as Week, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoKOT GROUP BY DATENAME(month, BillDate), YEAR(BillDate), DATEPART(week, BillDate) ORDER BY YEAR(BillDate), DATENAME(month, BillDate) DESC;
+
+SELECT YEAR(BillDate) as Year, DATENAME(month, BillDate) as Month, datediff(week, dateadd(week, datediff(week, 0, dateadd(month, datediff(month, 0, BillDate), 0)), 0), BillDate- 1) + 1 as Week, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoKOT WHERE DATENAME(month, BillDate) = 'December' GROUP BY DATENAME(month, BillDate), YEAR(BillDate), datediff(week, dateadd(week, datediff(week, 0, dateadd(month, datediff(month, 0, BillDate), 0)), 0), BillDate- 1) + 1 ORDER BY YEAR(BillDate), DATENAME(month, BillDate) DESC ;
+
+DECLARE @c int;
+SET @c = Year(GETDATE());
+DECLARE @kot int;
+DECLARE @ta int;
+DECLARE @hd int;
+set @kot = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = @c);
+set @ta = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = @c);
+set @hd = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoHD WHERE YEAR(BillDate) = @c);
+SELECT @c as Year,(@kot + @ta + @hd) as TotalSales, @kot as KOTSALES, @ta as TASALES, @hd as HDSALES;
+
++++++++++++++ Monthly ++++++++++++
+
+DECLARE @c int;
+SET @c = Year(GETDATE());
+SELECT @c as Year, DATENAME(month, BillDate) as Month, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = @c GROUP BY DATENAME(month, BillDate) UNION ALL
+SELECT @c as Year, DATENAME(month, BillDate) as Month, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = @c GROUP BY DATENAME(month, BillDate) UNION ALL
+SELECT @c as Year, DATENAME(month, BillDate) as Month, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoHD WHERE YEAR(BillDate) = @c GROUP BY DATENAME(month, BillDate);
+
+
+
+"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"

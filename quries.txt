@@ -1,0 +1,33 @@
+DECLARE @y int = YEAR(GETDATE());
+
+/* Months */
+SELECT @y as Year, DateName(month, BillDate) as Month,COUNT(*) as KOTSales FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = @y GROUP BY DATENAME(month, BillDate);
+
+SELECT @y as Year, DateName(month, BillDate) as Month,COUNT(*) as TASales FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = @y GROUP BY DATENAME(month, BillDate);
+
+SELECT @y as Year, DateName(month, BillDate) as Month,COUNT(*) as HDSales FROM RestaurantPOS_BillingInfoHD WHERE YEAR(BillDate) = @y GROUP BY DATENAME(month, BillDate);
+
+
+/* Days (Only of KOT, Change KOT to TA, HD) */
+DECLARE @m int = 10;
+
+SELECT @m as Month, Day(BillDate) as Day,COUNT(*) as KOTSales FROM RestaurantPOS_BillingInfoKOT WHERE Month(BillDate) = @m GROUP BY DAY(BillDate);
+
+/***** Days For all the months of current year *****/
+DECLARE @Y int = YEAR(GETDATE());
+SELECT Month(BillDate) AS Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = YEAR(GETDATE()) AND Month(BillDate) BETWEEN 1 AND 12 GROUP BY DAY(BillDate), Month(BillDate);
+SELECT Month(BillDate) AS Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = YEAR(GETDATE()) AND Month(BillDate) BETWEEN 1 AND 12 GROUP BY DAY(BillDate), Month(BillDate);
+SELECT Month(BillDate) AS Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoHD WHERE YEAR(BillDate) = YEAR(GETDATE()) AND Month(BillDate) BETWEEN 1 AND 12 GROUP BY DAY(BillDate), Month(BillDate);
+/  copied from db  /
+DECLARE @Y int = YEAR(GETDATE());
+SELECT Month(BillDate) AS Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = YEAR(GETDATE()) AND Month(BillDate) BETWEEN 1 AND 12 GROUP BY DAY(BillDate), Month(BillDate);
+SELECT Month(BillDate) AS Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = YEAR(GETDATE()) AND Month(BillDate) BETWEEN 1 AND 12 GROUP BY DAY(BillDate), Month(BillDate);
+SELECT Month(BillDate) AS Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoHD WHERE YEAR(BillDate) = YEAR(GETDATE()) AND Month(BillDate) BETWEEN 1 AND 12 GROUP BY DAY(BillDate), Month(BillDate);
+
+
+
+/*********** get slaes for all the days of current month **************/
+DECLARE @m int = MONTH(GETDATE());
+SELECT @m as Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoKOT WHERE Month(BillDate) = @m GROUP BY DAY(BillDate);
+SELECT @m as Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoTA WHERE Month(BillDate) = @m GROUP BY DAY(BillDate);
+SELECT @m as Month, Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoHD WHERE Month(BillDate) = @m GROUP BY DAY(BillDate);
