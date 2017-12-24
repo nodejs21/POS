@@ -115,7 +115,7 @@ app.post('/login', (req, res) => {
 			}
 		}
 		temp.DayTotalSales = dayTotalSales;
-		res.json(final);
+		res.json(final[0].Years[0]);
 	}).catch((err) => {
 		return res.json(err);
 	});
