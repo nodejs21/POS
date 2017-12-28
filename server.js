@@ -86,7 +86,7 @@ app.post('/login', (req, res) => {
 		for(var i = 0; i < 12; i++) {
 			temp.YearTotalSales[i] = temp.YearKOTSales[i] + temp.YearTASales[i] + temp.YearHDSales[i];
 		}
-		temp.MonthTotalSales = monthTotalSales;
+		// temp.MonthTotalSales = monthTotalSales;
 		query =`DECLARE @m int = MONTH(GETDATE());
 		SELECT Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoKOT WHERE Month(BillDate) = @m GROUP BY DAY(BillDate);
 		SELECT Day(BillDate) as Day,COUNT(*) as Sales FROM RestaurantPOS_BillingInfoTA WHERE Month(BillDate) = @m GROUP BY DAY(BillDate);
