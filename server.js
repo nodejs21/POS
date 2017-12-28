@@ -53,17 +53,11 @@ app.post('/login', (req, res) => {
 		final.push({
 			"Years": [{
 				"Year": yearQueryRecordset.Year,
-				"YearTotalSales": yearQueryRecordset.YearTotalSales,
-				"YearKOTSales": yearQueryRecordset.YearKOTSales,
-				"YearTASales": yearQueryRecordset.YearTASales,
-				"YearHDSales": yearQueryRecordset.YearHDSales,
-				"Months": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-				"MonthTotalSales": 0,
-				"MonthKOTSales": [0,0,0,0,0,0,0,0,0,0,0,0],
-				"MonthTASales": [0,0,0,0,0,0,0,0,0,0,0,0],
-				"MonthHDSales": [0,0,0,0,0,0,0,0,0,0,0,0],
-				"Days": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31],
-				"DayTotalSales": 0,
+				"YearTotalSales": [0,0,0,0,0,0,0,0,0,0,0,0],
+				"YearKOTSales": [0,0,0,0,0,0,0,0,0,0,0,0],
+				"YearTASales": [0,0,0,0,0,0,0,0,0,0,0,0],
+				"YearHDSales": [0,0,0,0,0,0,0,0,0,0,0,0],
+				"DayTotalSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 				"DayKOTSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 				"DayTASales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 				"DayHDSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
@@ -81,13 +75,16 @@ app.post('/login', (req, res) => {
 				monthSales = monthRecordsets[i][x].Sales;
 				monthTotalSales += monthSales;
 				if(i === "0") {
-					temp.MonthKOTSales.splice(monthNumber-1, 1, monthSales);
+					temp.YearKOTSales.splice(monthNumber-1, 1, monthSales);
 				} else if(i === "1") {
-					temp.MonthTASales.splice(monthNumber-1, 1, monthSales);
+					temp.YearTASales.splice(monthNumber-1, 1, monthSales);
 				} else if(i === "2") {
-					temp.MonthHDSales.splice(monthNumber-1, 1, monthSales);
+					temp.YearHDSales.splice(monthNumber-1, 1, monthSales);
 				}
 			}
+		}
+		for(var i = 0; i < 12; i++) {
+			temp.YearTotalSales[i] = temp.YearKOTSales[i] + temp.YearTASales[i] + temp.YearHDSales[i];
 		}
 		temp.MonthTotalSales = monthTotalSales;
 		query =`DECLARE @m int = MONTH(GETDATE());
@@ -114,7 +111,9 @@ app.post('/login', (req, res) => {
 				}
 			}
 		}
-		temp.DayTotalSales = dayTotalSales;
+		for(var i = 0; i < 31; i++) {
+			temp.DayTotalSales[i] = temp.DayKOTSales[i] + temp.DayTASales[i] + temp.DayHDSales[i];
+		}
 		res.json(final[0].Years[0]);
 	}).catch((err) => {
 		return res.json(err);
