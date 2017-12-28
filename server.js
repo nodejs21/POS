@@ -34,13 +34,13 @@ app.post('/login', (req, res) => {
 		var result = await pool.request().query(query);
 		if(!result || result.recordsets[0].length === 0)
 			return res.status(401).send("Invalid Username or Password!!");
-		query =`DECLARE @y int = Year(GETDATE());
-		DECLARE @kot int  = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = @y);
-		DECLARE @ta int  = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = @y);
-		DECLARE @hd int  = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoHD WHERE YEAR(BillDate) = @y);
-		SELECT @y AS Year,(@kot + @ta + @hd) AS YearTotalSales, @kot AS YearKOTSales, @ta AS YearTASales, @hd AS YearHDSales;`;
-		result = await pool.request().query(query);
-		var yearQueryRecordset = result.recordset[0];
+		// query =`DECLARE @y int = Year(GETDATE());
+		// DECLARE @kot int  = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = @y);
+		// DECLARE @ta int  = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = @y);
+		// DECLARE @hd int  = (SELECT COUNT(*) FROM RestaurantPOS_BillingInfoHD WHERE YEAR(BillDate) = @y);
+		// SELECT @y AS Year,(@kot + @ta + @hd) AS YearTotalSales, @kot AS YearKOTSales, @ta AS YearTASales, @hd AS YearHDSales;`;
+		// result = await pool.request().query(query);
+		// var yearQueryRecordset = result.recordset[0];
 		query =`DECLARE @y int = Year(GETDATE());
 		SELECT Month(BillDate) as Month, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoKOT WHERE YEAR(BillDate) = @y GROUP BY Month(BillDate);
 		SELECT Month(BillDate) as Month, COUNT(*) AS Sales FROM RestaurantPOS_BillingInfoTA WHERE YEAR(BillDate) = @y GROUP BY Month(BillDate);
@@ -52,7 +52,7 @@ app.post('/login', (req, res) => {
 		var monthHdRecordset = result.recordsets[2];
 		final.push({
 			"Years": [{
-				"Year": yearQueryRecordset.Year,
+				"Year": new Date().getFullYear(),
 				"YearTotalSales": [0,0,0,0,0,0,0,0,0,0,0,0],
 				"YearKOTSales": [0,0,0,0,0,0,0,0,0,0,0,0],
 				"YearTASales": [0,0,0,0,0,0,0,0,0,0,0,0],
