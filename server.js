@@ -57,10 +57,10 @@ app.post('/login', (req, res) => {
 				"YearKOTSales": [0,0,0,0,0,0,0,0,0,0,0,0],
 				"YearTASales": [0,0,0,0,0,0,0,0,0,0,0,0],
 				"YearHDSales": [0,0,0,0,0,0,0,0,0,0,0,0],
-				"DayTotalSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-				"DayKOTSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-				"DayTASales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-				"DayHDSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+				"MonthTotalSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+				"MonthKOTSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+				"MonthTASales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+				"MonthHDSales": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 			}]
 		});
 		var length = 0;
@@ -103,16 +103,16 @@ app.post('/login', (req, res) => {
 				daySales = dayRecordsets[i][x].Sales;
 				dayTotalSales += daySales;
 				if(i === "0") {
-					temp.DayKOTSales.splice(dayNumber-1, 1, daySales);
+					temp.MonthKOTSales.splice(dayNumber-1, 1, daySales);
 				} else if(i === "1") {
-					temp.DayTASales.splice(dayNumber-1, 1, daySales);
+					temp.MonthTASales.splice(dayNumber-1, 1, daySales);
 				} else if(i === "2") {
-					temp.DayHDSales.splice(dayNumber-1, 1, daySales);
+					temp.MonthHDSales.splice(dayNumber-1, 1, daySales);
 				}
 			}
 		}
 		for(var i = 0; i < 31; i++) {
-			temp.DayTotalSales[i] = temp.DayKOTSales[i] + temp.DayTASales[i] + temp.DayHDSales[i];
+			temp.MonthTotalSales[i] = temp.MonthKOTSales[i] + temp.MonthTASales[i] + temp.MonthHDSales[i];
 		}
 		res.json(final[0].Years[0]);
 	}).catch((err) => {
